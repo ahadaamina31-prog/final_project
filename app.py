@@ -5,7 +5,7 @@ from PIL import Image
 import numpy as np
 
 # Load the trained CNN model
-model = tf.keras.models.load_model("digit_model.h5")
+model = tf.keras.models.load_model("digit_model.h5", compile=False)
 
 # Title of the application
 st.title("Handwritten Digit Recognition System")
