@@ -57,8 +57,3 @@ if uploaded_file is not None:
 
     # Display confidence score
     st.info(f"Prediction Confidence: {confidence:.2f}%")
-
-<<<<<<< HEAD
-
-=======
->>>>>>> 9f22f3e5b3162481b2bd8c4a03467330ea5a6d7b
