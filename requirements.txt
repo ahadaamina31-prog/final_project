@@ -1,6 +1,5 @@
 streamlit
-tensorflow==2.16.1
+tensorflow
 numpy
-pillow
-opencv-python-headless
-h5py
+Pillow
+streamlit-drawable-canvas
