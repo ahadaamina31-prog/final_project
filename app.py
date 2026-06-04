@@ -1,21 +1,23 @@
-# Import required libraries
 import streamlit as st
 import tensorflow as tf
 from PIL import Image
 import numpy as np
 from streamlit_drawable_canvas import st_canvas
 
-# Load trained model
-model = tf.keras.models.load_model("digit_model.h5", compile=False)
+# Load model (optimized)
+@st.cache_resource
+def load_model():
+    return tf.keras.models.load_model("digit_model.h5", compile=False)
+
+model = load_model()
 
 st.title("✍️ Handwritten Digit Recognition System")
-
-st.write("Draw a digit OR upload an image (0-9)")
+st.write("Draw OR upload an image of digit (0-9)")
 
 # =========================
-# DRAWING SECTION
+# DRAW SECTION
 # =========================
-st.subheader("✍️ Draw Digit")
+st.subheader("🎨 Draw Digit")
 
 canvas_result = st_canvas(
     stroke_width=15,
@@ -33,19 +35,18 @@ canvas_result = st_canvas(
 st.subheader("📤 Upload Image")
 
 uploaded_file = st.file_uploader(
-    "Choose an image...",
+    "Upload digit image",
     type=["png", "jpg", "jpeg"]
 )
 
 # =========================
-# PREDICTION FROM DRAWING
+# PREDICT BUTTON
 # =========================
-if st.button("Predict from Drawing"):
+if st.button("Predict"):
 
+    # ---------------- DRAWING ----------------
     if canvas_result.image_data is not None:
-
-        img = canvas_result.image_data[:, :, 0]
-        img = Image.fromarray(img.astype(np.uint8))
+        img = Image.fromarray(canvas_result.image_data.astype("uint8")).convert("L")
         img = img.resize((28, 28))
         img = np.array(img)
 
@@ -56,26 +57,23 @@ if st.button("Predict from Drawing"):
         prediction = model.predict(img)
         digit = np.argmax(prediction)
 
-        st.success(f"Predicted Digit (Drawing): {digit}")
+        st.success(f"🎨 Drawing Prediction: {digit}")
         st.write(f"Confidence: {np.max(prediction)*100:.2f}%")
 
-# =========================
-# PREDICTION FROM UPLOAD
-# =========================
-if uploaded_file is not None:
+    # ---------------- UPLOAD ----------------
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file).convert("L")
+        st.image(image, caption="Uploaded Image", width=200)
 
-    image = Image.open(uploaded_file).convert("L")
-    st.image(image, caption="Uploaded Image", width=200)
+        image = image.resize((28, 28))
+        image = np.array(image)
 
-    image = image.resize((28, 28))
-    image_array = np.array(image)
+        image = 255 - image
+        image = image / 255.0
+        image = image.reshape(1, 28, 28, 1)
 
-    image_array = 255 - image_array
-    image_array = image_array / 255.0
-    image_array = image_array.reshape(1, 28, 28, 1)
+        prediction = model.predict(image)
+        digit = np.argmax(prediction)
 
-    prediction = model.predict(image_array)
-    digit = np.argmax(prediction)
-
-    st.success(f"Predicted Digit (Upload): {digit}")
-    st.write(f"Confidence: {np.max(prediction)*100:.2f}%")
+        st.success(f"📤 Upload Prediction: {digit}")
+        st.write(f"Confidence: {np.max(prediction)*100:.2f}%")
