@@ -4,45 +4,45 @@ import tensorflow as tf
 from PIL import Image
 from streamlit_drawable_canvas import st_canvas
 
-# Load trained model
-model = tf.keras.models.load_model("digit_model.h5")
+st.set_page_config(page_title="Digit Recognition", page_icon="✍️")
 
-st.title("✍️ Draw a Digit Recognition App (0-9)")
-st.write("Draw a digit in the box below")
+st.title("✍️ Handwritten Digit Recognition")
+st.write("Draw a digit (0-9) in the canvas below.")
 
-# Create drawing canvas
+@st.cache_resource
+def load_model():
+    return tf.keras.models.load_model("digit_model.h5", compile=False)
+
+model = load_model()
+
 canvas_result = st_canvas(
+    fill_color="black",
     stroke_width=15,
     stroke_color="white",
     background_color="black",
-    height=280,
     width=280,
+    height=280,
     drawing_mode="freedraw",
-    key="canvas"
+    key="canvas",
 )
 
-# If user draws something
 if canvas_result.image_data is not None:
 
-    # Convert canvas image
-    img = Image.fromarray(canvas_result.image_data.astype("uint8"))
-    img = img.convert("L")  # grayscale
+    img = Image.fromarray(
+        canvas_result.image_data.astype(np.uint8)
+    ).convert("L")
+
     img = img.resize((28, 28))
 
-    # Convert to array
     img_array = np.array(img)
 
-    # Normalize + invert (important for MNIST model)
     img_array = 255 - img_array
     img_array = img_array / 255.0
 
-    # Reshape for model
     img_array = img_array.reshape(1, 28, 28, 1)
 
-    # Predict
-    prediction = model.predict(img_array)
+    prediction = model.predict(img_array, verbose=0)
     digit = np.argmax(prediction)
 
-    # Show results
-    st.image(img, caption="Processed Image (28x28)", width=150)
+    st.image(img, caption="Processed Image (28×28)", width=150)
     st.success(f"Predicted Digit: {digit}")
