@@ -1,60 +1,81 @@
-
 # Import required libraries
 import streamlit as st
 import tensorflow as tf
 from PIL import Image
 import numpy as np
+from streamlit_drawable_canvas import st_canvas
 
-# Load the trained CNN model
+# Load trained model
 model = tf.keras.models.load_model("digit_model.h5", compile=False)
 
-# Title of the application
-st.title("Handwritten Digit Recognition System")
+st.title("✍️ Handwritten Digit Recognition System")
 
-# Project description
-st.write("Upload an image of a handwritten digit (0–9) to predict the digit using a CNN model.")
+st.write("Draw a digit OR upload an image (0-9)")
 
-# Upload image file
+# =========================
+# DRAWING SECTION
+# =========================
+st.subheader("✍️ Draw Digit")
+
+canvas_result = st_canvas(
+    stroke_width=15,
+    stroke_color="white",
+    background_color="black",
+    height=280,
+    width=280,
+    drawing_mode="freedraw",
+    key="canvas",
+)
+
+# =========================
+# UPLOAD SECTION
+# =========================
+st.subheader("📤 Upload Image")
+
 uploaded_file = st.file_uploader(
-    "Choose an image file",
+    "Choose an image...",
     type=["png", "jpg", "jpeg"]
 )
 
-# Check whether a file is uploaded
+# =========================
+# PREDICTION FROM DRAWING
+# =========================
+if st.button("Predict from Drawing"):
+
+    if canvas_result.image_data is not None:
+
+        img = canvas_result.image_data[:, :, 0]
+        img = Image.fromarray(img.astype(np.uint8))
+        img = img.resize((28, 28))
+        img = np.array(img)
+
+        img = 255 - img
+        img = img / 255.0
+        img = img.reshape(1, 28, 28, 1)
+
+        prediction = model.predict(img)
+        digit = np.argmax(prediction)
+
+        st.success(f"Predicted Digit (Drawing): {digit}")
+        st.write(f"Confidence: {np.max(prediction)*100:.2f}%")
+
+# =========================
+# PREDICTION FROM UPLOAD
+# =========================
 if uploaded_file is not None:
 
-    # Open the image and convert it to grayscale
     image = Image.open(uploaded_file).convert("L")
+    st.image(image, caption="Uploaded Image", width=200)
 
-    # Resize image to 28x28 pixels
     image = image.resize((28, 28))
+    image_array = np.array(image)
 
-    # Convert image into numpy array
-    img_array = np.array(image)
+    image_array = 255 - image_array
+    image_array = image_array / 255.0
+    image_array = image_array.reshape(1, 28, 28, 1)
 
-    # Invert image colors
-    img_array = 255 - img_array
+    prediction = model.predict(image_array)
+    digit = np.argmax(prediction)
 
-    # Normalize pixel values
-    img_array = img_array / 255.0
-
-    # Reshape image for CNN model
-    img_array = img_array.reshape(1, 28, 28, 1)
-
-    # Predict the digit
-    prediction = model.predict(img_array)
-
-    # Get predicted digit
-    predicted_digit = np.argmax(prediction)
-
-    # Get prediction confidence
-    confidence = np.max(prediction) * 100
-
-    # Display uploaded image
-    st.image(image, caption="Uploaded Image", width=150)
-
-    # Display prediction result
-    st.success(f"Predicted Digit: {predicted_digit}")
-
-    # Display confidence score
-    st.info(f"Prediction Confidence: {confidence:.2f}%")
+    st.success(f"Predicted Digit (Upload): {digit}")
+    st.write(f"Confidence: {np.max(prediction)*100:.2f}%")
