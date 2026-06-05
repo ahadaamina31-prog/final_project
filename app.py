@@ -11,7 +11,7 @@ def load_model():
 
 model = load_model()
 
-st.title("✍️ Handwritten Digit Recognition System")
+st.title("✍️ AI Digit Recoginizer")
 st.write("Draw OR upload an image of digit (0-9)")
 
 # =========================
@@ -42,7 +42,7 @@ uploaded_file = st.file_uploader(
 # =========================
 # PREDICT BUTTON
 # =========================
-if st.button("Predict"):
+if st.button("show"):
 
     # ---------------- DRAWING ----------------
     if canvas_result.image_data is not None:
