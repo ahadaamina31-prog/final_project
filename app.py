@@ -4,24 +4,17 @@ from PIL import Image
 import numpy as np
 from streamlit_drawable_canvas import st_canvas
 
-# =========================
 # LOAD MODEL
-# =========================
 @st.cache_resource
 def load_model():
     return tf.keras.models.load_model("digit_model.h5", compile=False)
 
 model = load_model()
-
-# =========================
 # TITLE
-# =========================
+
 st.title("✍️ AI Digit Recognizer")
 st.write("Draw OR upload an image of a digit (0-9)")
-
-# =========================
 # DRAW SECTION
-# =========================
 st.subheader("🎨 Draw Digit")
 
 canvas_result = st_canvas(
@@ -33,10 +26,7 @@ canvas_result = st_canvas(
     drawing_mode="freedraw",
     key="canvas",
 )
-
-# =========================
 # DRAW PREDICTION BUTTON
-# =========================
 if st.button("🎨 Predict Drawing"):
 
     if canvas_result.image_data is not None:
@@ -63,21 +53,15 @@ if st.button("🎨 Predict Drawing"):
 
         else:
             st.warning("Please draw a digit first.")
-
-# =========================
 # UPLOAD SECTION
-# =========================
 st.subheader("📤 Upload Image")
 
 uploaded_file = st.file_uploader(
     "Upload digit image",
     type=["png", "jpg", "jpeg"]
 )
-
-# =========================
 # UPLOAD PREDICTION BUTTON
-# =========================
-if st.button("📤 Predict Uploaded Image"):
+if st.button("📤 show "):
 
     if uploaded_file is not None:
 
